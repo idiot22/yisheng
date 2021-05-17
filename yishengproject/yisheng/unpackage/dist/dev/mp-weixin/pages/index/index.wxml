@@ -1,0 +1,1 @@
+<view class="index-container _div"><view class="logo _div"></view><view class="model-content _div"><navigator class="model-wraper" url="/pages/order-list/order-list">录单模块<image src="../../static/images/order.png"></image></navigator><navigator class="model-wraper" url>出库模块<image src="../../static/images/fahuo.png"></image></navigator></view></view>

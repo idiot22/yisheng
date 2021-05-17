@@ -1,0 +1,56 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/order-list/order-list",
+    "pages/order-xq/order-xq",
+    "pages/outorder-list/outorder-list",
+    "pages/outorder-xq/outorder-xq",
+    "pages/personnal-center/personnal-center",
+    "pages/dingdan-info/dingdan-info"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "",
+        "selectedIconPath": "",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "",
+        "selectedIconPath": "",
+        "text": "个人中心"
+      }
+    ]
+  },
+  "usingComponents": {
+    "van-button": "/wxcomponents/vant-weapp/button/index",
+    "van-dropdown-menu": "/wxcomponents/vant-weapp/dropdown-menu/index",
+    "van-dropdown-item": "/wxcomponents/vant-weapp/dropdown-item/index",
+    "van-cell": "/wxcomponents/vant-weapp/cell/index",
+    "van-cell-group": "/wxcomponents/vant-weapp/cell-group/index",
+    "van-switch": "/wxcomponents/vant-weapp/switch/index",
+    "van-field": "/wxcomponents/vant-weapp/field/index",
+    "van-icon": "/wxcomponents/vant-weapp/icon/index",
+    "van-row": "/wxcomponents/vant-weapp/row/index",
+    "van-col": "/wxcomponents/vant-weapp/col/index",
+    "van-swipe-cell": "/wxcomponents/vant-weapp/swipe-cell/index",
+    "van-tag": "/wxcomponents/vant-weapp/tag/index",
+    "van-datetime-picker": "/wxcomponents/vant-weapp/datetime-picker/index",
+    "van-popup": "/wxcomponents/vant-weapp/popup/index",
+    "van-picker": "/wxcomponents/vant-weapp/picker/index",
+    "cat-field": "/wxcomponents/cust-components/cat-field"
+  }
+}
