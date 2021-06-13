@@ -74,7 +74,7 @@ export default{
 		  }
 		},
 		validateRequire(rule){
-			if(!this.value){
+			if(!this.value && this.value !== 0){
 				this.errorMsg = rule.message
 				return false
 			}else{

@@ -31,6 +31,9 @@
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
 }
+.order-xq-container .submit-btn.data-v-1e216986 button {
+  margin: 20px 0px;
+}
 .order-xq-container .order-info.data-v-1e216986 {
   margin-top: 20px;
   padding: 10px;

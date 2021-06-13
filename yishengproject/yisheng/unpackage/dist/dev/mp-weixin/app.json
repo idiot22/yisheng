@@ -51,6 +51,8 @@
     "van-datetime-picker": "/wxcomponents/vant-weapp/datetime-picker/index",
     "van-popup": "/wxcomponents/vant-weapp/popup/index",
     "van-picker": "/wxcomponents/vant-weapp/picker/index",
+    "van-toast": "/wxcomponents/vant-weapp/toast/index",
     "cat-field": "/wxcomponents/cust-components/cat-field"
-  }
+  },
+  "sitemapLocation": "sitemap.json"
 }

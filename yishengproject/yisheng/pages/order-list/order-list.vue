@@ -38,19 +38,19 @@
 			<van-swipe-cell  class='swipe-cell' right-width="65" v-for='(order,orderIndex) in orderList' :key='orderIndex'>
 				<div class='list-item-wraper'>
 				  <van-row>
-					  <van-col :span='9'>客户姓名：<span class='info'>{{order.orderInfo.customerName}}</span></van-col>
-					  <van-col :span='9'>联系电话：<span class='info'>{{order.orderInfo.phone}}</span></van-col>
+					  <van-col :span='9'>客户姓名：<span class='info'>{{order.customerName}}</span></van-col>
+					  <van-col :span='9'>联系电话：<span class='info'>{{order.phone}}</span></van-col>
 					  <van-col :span='6' class='tag-wraper'>
-						  <van-tag color="#ffe1e1" text-color="#f17474" v-if="order.orderInfo.state === '未出库'">未出库</van-tag>
-						  <van-tag color="#f3f3f3" text-color="#a7a7a7" v-if="order.orderInfo.state === '已出库'">已出库</van-tag>
-						  <van-tag color="#dafffc" text-color="#70b1b7" v-if="order.orderInfo.state === '部分出库'">部分出库</van-tag>
+						  <van-tag color="#ffe1e1" text-color="#f17474" v-if="order.state === '未出库'">未出库</van-tag>
+						  <van-tag color="#f3f3f3" text-color="#a7a7a7" v-if="order.state === '已结单'">已出库</van-tag>
+						  <van-tag color="#dafffc" text-color="#70b1b7" v-if="order.state === '出库中'">部分出库</van-tag>
 					  </van-col>
 				  </van-row>
 				  <van-row>
-					  <van-col>订单编号：<span class='info'>{{order.orderInfo.orderId}}</span></van-col>
+					  <van-col>订单编号：<span class='info'>{{order.orderId}}</span></van-col>
 				  </van-row>
 				  <van-row>
-					  <van-col>录单时间：<span class='info'>{{order.orderInfo.recordDate}}</span></van-col>
+					  <van-col>录单时间：<span class='info'>{{order.recordDate}}</span></van-col>
 				  </van-row>
 				  <van-row>
 					  <van-col :span='18'>录入产品：
@@ -62,7 +62,7 @@
 				  </van-row>
 				  <van-row>
 					  <div class='order-list-total-money'>
-						  订单总额：<span>¥{{order.orderInfo.saleAmount}}</span>
+						  订单总额：<span>¥{{order.allTotalPrice}}</span>
 					  </div>
 				  </van-row>
 				 </div>
@@ -95,6 +95,8 @@
 </template>
 
 <script>
+	const db = uniCloud.database()
+	const collection = db.collection('order-info');
 	export default {
 		data() {
 			return {
@@ -112,97 +114,19 @@
 					orderStatus:0,
 					recordDate:''
 				},
-				orderList:[{
-					orderInfo:{
-						customerName:'姚丽佳',
-						phone:'13631322332',
-						orderId:'232232332',
-						recordDate:'2020-10-10 09:00',
-						saleAmount: '112000',
-						state: '未出库'
-					},
-					productList:[{
-						productName:'护栏',
-						modelType:'100*100',
-						amount:'10000',
-						unit:'米',
-						unitPrice:'100',
-						totalAmount:'1000000',
-						adjustAmount:30
-					},
-					{
-						productName:'花箱',
-						modelType:'100*100',
-						amount:'100',
-						unit:'只',
-						unitPrice:'120',
-						totalAmount:'12000',
-						adjustAmount:-40
-					}]
-				},{
-					orderInfo:{
-						customerName:'杨树',
-						phone:'13631322332',
-						orderId:'232232332',
-						recordDate:'2020-10-10 09:00',
-						saleAmount: '400000',
-						state: '已出库'
-					},
-					productList:[{
-						productName:'回形花香',
-						modelType:'100*100',
-						amount:'10000',
-						unit:'米',
-						unitPrice:'100',
-						totalAmount:'1000000',
-						adjustAmount:30
-					},
-					{
-						productName:'花箱',
-						modelType:'100*100',
-						amount:'100',
-						unit:'只',
-						unitPrice:'120',
-						totalAmount:'12000',
-						adjustAmount:-40
-					}]
-				},{
-					orderInfo:{
-						customerName:'杨树',
-						phone:'13631322332',
-						orderId:'232232332',
-						recordDate:'2020-10-10 09:00',
-						saleAmount: '400000',
-						state: '部分出库'
-					},
-					productList:[{
-						productName:'回形花香',
-						modelType:'100*100',
-						amount:'10000',
-						unit:'米',
-						unitPrice:'100',
-						totalAmount:'1000000',
-						adjustAmount:30
-					},
-					{
-						productName:'花箱',
-						modelType:'100*100',
-						amount:'100',
-						unit:'只',
-						unitPrice:'120',
-						totalAmount:'12000',
-						adjustAmount:-40
-					}]
-				}]
+				orderList:[
+					{customerName:'',
+					orderId:'',
+					phone:'',
+					productList:'',
+					_id:'',
+					productList:[]}
+				]
 			}
 		},
-		onLoad(){
-			uniCloud.callFunction({
-				name:'test',
-				success: (e) => {
-					console.log(e)
-				}
-			})
+		async onLoad(){
+			let res = await collection.get()
+			this.orderList = res.result.data
 		},
 		methods: {
 			onConfirm() {
@@ -232,10 +156,8 @@
 			},
 			inputDate(event){
 				this.dateObj.currentDate = event.mp.detail
-				console.log(event.mp.detail)
 			},
 			dateConfirm(event){
-				console.log(event)
 				this.showPop = false
 			}
 		}
@@ -267,7 +189,7 @@
 	text-align: right;
 }
 .add-order-wraper{
-	position: absolute;
+	position: fixed;
 	right: 20px;
 	bottom: 30px;
 }

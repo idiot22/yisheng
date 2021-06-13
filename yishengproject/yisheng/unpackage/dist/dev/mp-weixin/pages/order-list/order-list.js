@@ -143,7 +143,7 @@ __webpack_require__.r(__webpack_exports__);
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(uniCloud) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; //
+/* WEBPACK VAR INJECTION */(function(uniCloud) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@babel/runtime/regenerator */ 28));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}function _defineProperty(obj, key, value) {if (key in obj) {Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });} else {obj[key] = value;}return obj;} //
 //
 //
 //
@@ -239,7 +239,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-var _default =
+
+var db = uniCloud.database();
+var collection = db.collection('order-info');var _default =
 {
   data: function data() {
     return {
@@ -257,97 +259,19 @@ var _default =
         orderStatus: 0,
         recordDate: '' },
 
-      orderList: [{
-        orderInfo: {
-          customerName: '姚丽佳',
-          phone: '13631322332',
-          orderId: '232232332',
-          recordDate: '2020-10-10 09:00',
-          saleAmount: '112000',
-          state: '未出库' },
-
-        productList: [{
-          productName: '护栏',
-          modelType: '100*100',
-          amount: '10000',
-          unit: '米',
-          unitPrice: '100',
-          totalAmount: '1000000',
-          adjustAmount: 30 },
-
-        {
-          productName: '花箱',
-          modelType: '100*100',
-          amount: '100',
-          unit: '只',
-          unitPrice: '120',
-          totalAmount: '12000',
-          adjustAmount: -40 }] },
-
-      {
-        orderInfo: {
-          customerName: '杨树',
-          phone: '13631322332',
-          orderId: '232232332',
-          recordDate: '2020-10-10 09:00',
-          saleAmount: '400000',
-          state: '已出库' },
-
-        productList: [{
-          productName: '回形花香',
-          modelType: '100*100',
-          amount: '10000',
-          unit: '米',
-          unitPrice: '100',
-          totalAmount: '1000000',
-          adjustAmount: 30 },
-
-        {
-          productName: '花箱',
-          modelType: '100*100',
-          amount: '100',
-          unit: '只',
-          unitPrice: '120',
-          totalAmount: '12000',
-          adjustAmount: -40 }] },
-
-      {
-        orderInfo: {
-          customerName: '杨树',
-          phone: '13631322332',
-          orderId: '232232332',
-          recordDate: '2020-10-10 09:00',
-          saleAmount: '400000',
-          state: '部分出库' },
-
-        productList: [{
-          productName: '回形花香',
-          modelType: '100*100',
-          amount: '10000',
-          unit: '米',
-          unitPrice: '100',
-          totalAmount: '1000000',
-          adjustAmount: 30 },
-
-        {
-          productName: '花箱',
-          modelType: '100*100',
-          amount: '100',
-          unit: '只',
-          unitPrice: '120',
-          totalAmount: '12000',
-          adjustAmount: -40 }] }] };
-
+      orderList: [_defineProperty({
+        customerName: '',
+        orderId: '',
+        phone: '',
+        productList: '',
+        _id: '' }, "productList",
+      [])] };
 
 
   },
-  onLoad: function onLoad() {
-    uniCloud.callFunction({
-      name: 'test',
-      success: function success(e) {
-        console.log(e);
-      } });
-
+  onLoad: function onLoad() {var _this = this;return _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee() {var res;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:_context.next = 2;return (
+                collection.get());case 2:res = _context.sent;
+              _this.orderList = res.result.data;case 4:case "end":return _context.stop();}}}, _callee);}))();
   },
   methods: {
     onConfirm: function onConfirm() {
@@ -377,10 +301,8 @@ var _default =
     },
     inputDate: function inputDate(event) {
       this.dateObj.currentDate = event.mp.detail;
-      console.log(event.mp.detail);
     },
     dateConfirm: function dateConfirm(event) {
-      console.log(event);
       this.showPop = false;
     } } };exports.default = _default;
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/vue-cli-plugin-uni/packages/uni-cloud/dist/index.js */ 25)["default"]))
