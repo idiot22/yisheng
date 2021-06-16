@@ -13,6 +13,7 @@
 </script>
 
 <style lang="scss">
+  @import './static/fonts/iconfont.css';
 	/*每个页面公共css */
 	page{
 		height: 100%;

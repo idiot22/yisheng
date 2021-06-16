@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<van-field
-			:value="value"
+			:value="value || initValue"
 			:label="label"
 			:placeholder="placeholder"
 			:border="false"
@@ -20,7 +20,7 @@
 </template>
 <script>
 export default{
-	props:['placeholder','label','value','rules','readonly'],
+	props:['placeholder','label','value','rules','readonly','initValue'],
 	data(){
 		return{
 			required:false,

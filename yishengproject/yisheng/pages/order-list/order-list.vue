@@ -35,22 +35,29 @@
 		  </van-dropdown-item>
 		</van-dropdown-menu>
 		<div class='list-wraper'>
-			<van-swipe-cell  class='swipe-cell' right-width="65" v-for='(order,orderIndex) in orderList' :key='orderIndex'>
+			<van-swipe-cell
+				class='swipe-cell' 
+				right-width="65" 
+				v-for='(order,orderIndex) in orderList' 
+				:key='orderIndex'
+				async-close
+				@click='toOrderXq(order)'
+				@close="deleteOrder($event,order)">
 				<div class='list-item-wraper'>
 				  <van-row>
 					  <van-col :span='9'>客户姓名：<span class='info'>{{order.customerName}}</span></van-col>
 					  <van-col :span='9'>联系电话：<span class='info'>{{order.phone}}</span></van-col>
 					  <van-col :span='6' class='tag-wraper'>
-						  <van-tag color="#ffe1e1" text-color="#f17474" v-if="order.state === '未出库'">未出库</van-tag>
-						  <van-tag color="#f3f3f3" text-color="#a7a7a7" v-if="order.state === '已结单'">已出库</van-tag>
-						  <van-tag color="#dafffc" text-color="#70b1b7" v-if="order.state === '出库中'">部分出库</van-tag>
+						  <van-tag color="#ffe1e1" text-color="#f17474" v-if="order.status === '未出库'">未出库</van-tag>
+						  <van-tag color="#f3f3f3" text-color="#a7a7a7" v-if="order.status === '已结单'">已出库</van-tag>
+						  <van-tag color="#dafffc" text-color="#70b1b7" v-if="order.status === '出库中'">出库中</van-tag>
 					  </van-col>
 				  </van-row>
 				  <van-row>
 					  <van-col>订单编号：<span class='info'>{{order.orderId}}</span></van-col>
 				  </van-row>
 				  <van-row>
-					  <van-col>录单时间：<span class='info'>{{order.recordDate}}</span></van-col>
+					  <van-col>录单时间：<span class='info'>{{order.createTime}}</span></van-col>
 				  </van-row>
 				  <van-row>
 					  <van-col :span='18'>录入产品：
@@ -72,7 +79,7 @@
 			</van-swipe-cell>
 		</div>
 		<div class='add-order-wraper'>
-			<navigator url="/pages/order-xq/order-xq">
+			<navigator url="/pages/order-xq/order-xq?type=add">
 				<van-button icon="plus" type="primary" round color='black'/>
 			</navigator>
 		</div>
@@ -83,7 +90,7 @@
 		  @close="showPop = false">
 		  <van-datetime-picker
 		    @confirm='dateConfirm'
-			@cancel='showPop=false'
+		  	@cancel='showPop=false'
 		    type="date"
 		    :value="dateObj.currentDate"
 		    @input="inputDate"
@@ -91,10 +98,14 @@
 		    :formatter="formatter"
 		  />
 		</van-popup>
+		<van-dialog id="van-dialog" />
+		<van-toast id="van-toast" />
 	</div>
 </template>
 
 <script>
+	import Dialog from '../../wxcomponents/vant-weapp/dialog/dialog';
+	import Toast from '../../wxcomponents/vant-weapp/toast/toast.js'
 	const db = uniCloud.database()
 	const collection = db.collection('order-info');
 	export default {
@@ -114,46 +125,63 @@
 					orderStatus:0,
 					recordDate:''
 				},
-				orderList:[
-					{customerName:'',
-					orderId:'',
-					phone:'',
-					productList:'',
-					_id:'',
-					productList:[]}
-				]
+				orderList:[]
 			}
 		},
 		async onLoad(){
-			let res = await collection.get()
-			this.orderList = res.result.data
+			this.getOrderList()
 		},
 		methods: {
 			onConfirm() {
-			    this.selectComponent('#item').toggle();
-			  },
-			  onSwitch1Change(detail) {
-			    this.setData({ switch1: detail });
-			  },
-			
-			  onSwitch2Change(detail) {
-			    this.setData({ switch2: detail });
-			  },
-			  deleteOrder(){
-				  console.log(33)
-			  },
-			  formatter(type, value) {
-				  if (type === 'year') {
-					return `${value}年`;
-				  } 
-				  if (type === 'month') {
-					return `${value}月`;
-				  }
-				  if (type === 'day') {
-				  	return `${value}日`;
-				  }
-				  return value;
+			  this.selectComponent('#item').toggle();
 			},
+      onSwitch1Change(detail) {
+        this.setData({ switch1: detail });
+      },
+      onSwitch2Change(detail) {
+        this.setData({ switch2: detail });
+      },
+      toOrderXq(order){
+        uni.navigateTo({
+					url: `../order-xq/order-xq?type=edit&order=${JSON.stringify(order)}`
+				})
+      },
+      deleteOrder($event,order){
+        const { position, instance } = $event.detail;
+        Dialog.confirm({
+        message: '确定删除此订单吗？',
+        }).then(() => {
+        collection.where({_id: order._id}).remove().then(()=>{
+          Toast('删除成功')
+          this.getOrderList()
+        })
+        instance.close();
+        }).catch(()=>{
+          instance.close();
+        })
+      },
+      getOrderList(){
+        let loadingToast = Toast.loading({
+          message: '加载中...',
+          forbidClick: true,
+        })
+        collection.get().then((res)=>{
+          this.orderList = res.result.data
+          loadingToast.clear()
+        })
+      },
+      formatter(type, value) {
+        if (type === 'year') {
+        return `${value}年`;
+        } 
+        if (type === 'month') {
+        return `${value}月`;
+        }
+        if (type === 'day') {
+          return `${value}日`;
+        }
+        return value;
+      },
 			inputDate(event){
 				this.dateObj.currentDate = event.mp.detail
 			},

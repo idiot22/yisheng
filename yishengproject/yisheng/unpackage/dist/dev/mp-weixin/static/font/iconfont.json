@@ -1,0 +1,37 @@
+{
+  "id": "2524352",
+  "name": "艺胜护栏",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "425997",
+      "name": "保存",
+      "font_class": "baocun",
+      "unicode": "e645",
+      "unicode_decimal": 58949
+    },
+    {
+      "icon_id": "11493804",
+      "name": "编辑",
+      "font_class": "bianji",
+      "unicode": "e61d",
+      "unicode_decimal": 58909
+    },
+    {
+      "icon_id": "947048",
+      "name": "订单",
+      "font_class": "dingdan",
+      "unicode": "e652",
+      "unicode_decimal": 58962
+    },
+    {
+      "icon_id": "7226233",
+      "name": "发货",
+      "font_class": "fahuo",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    }
+  ]
+}

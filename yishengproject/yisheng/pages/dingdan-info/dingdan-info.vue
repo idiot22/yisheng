@@ -38,7 +38,8 @@
 				orderInfo:{
 					customerName:'',
 					phone:'',
-					orderId:''
+					orderId:'',
+                    customerRemark:''
 				}
 			}
 		},
@@ -56,7 +57,7 @@
 				this.$eventBus.$emit('saveOrderInfo',this.orderInfo)
 				setTimeout(()=>{
 					uni.navigateBack()
-				},1000)
+				},500)
 			}
 		}
 	}
