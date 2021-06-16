@@ -144,7 +144,10 @@
 					  </cat-field>
 					</van-cell-group>
 				</div>
-				<van-button  icon="plus" block color='black' @click='addProduct' v-if="orderXqType === 'add'">添加产品</van-button>
+				<van-button  icon="plus" block 
+        color='black' 
+        @click='addProduct' 
+        v-if="orderXqType === 'add' || isEditProduct">添加产品</van-button>
 			</div>
 		</div>
 		<div class='inorder-detail-wraper outorder-detail-wraper' v-if="orderXqType === 'edit' && orderXq.deliveryList.length>0">
@@ -152,17 +155,20 @@
         <div class='product-info-content' v-for="(item,index) in orderXq.deliveryList" :key='index'>
           <div class='product-header'>
             {{'运单'+(index+1)}}
-            <div class='edit-save-icon' @click='isEditDelivery=!isEditDelivery' v-if="index===0 && orderXqType === 'edit'">
-              <i class='iconfont icon-baocun' v-if='isEditDelivery'></i>
-              <i class='iconfont icon-bianji' v-else></i>
+            <div class='edit-save-icon' @click='changeDeliveryEditStatus'>
+              <div v-if='item.isEdit !== undefined && index===0'>
+                <i class='iconfont icon-baocun' v-if='item.isEdit'></i>
+                <i class='iconfont icon-bianji' v-else></i>
+              </div>
+              <div style='width: 10px;' v-if='item.isEdit || item.isEdit === undefined'></div>
+              <van-icon class='cross-icon' name="cross" v-if='item.isEdit || item.isEdit === undefined' @click='delDelivery(index)'/>
             </div>
-            <van-icon class='cross-icon' name="cross"v-if='index!=0' @click='delDelivery(index)'/>
           </div>
           <van-cell-group>
             <cat-field
             v-model="item.expressNumber"
             :initValue="item.expressNumber"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="运单号"
             placeholder="请输入运单号"
             :border="false"
@@ -171,7 +177,7 @@
             <cat-field
             v-model="item.deliveryAddress"
             :initValue="item.deliveryAddress"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="送货地址"
             placeholder="请输入送货地址"
             :border="false"
@@ -180,7 +186,7 @@
             <cat-field
             v-model="item.expressAmount"
             :initValue="item.expressAmount"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="运费金额"
             placeholder="请输入运费金额"
             :border="false"
@@ -189,7 +195,7 @@
             <cat-field
             v-model="item.expressPayer"
             :initValue="item.expressPayer"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="运费付款人"
             placeholder="请输入运费付款人"
             :border="false"
@@ -198,7 +204,7 @@
             <cat-field
             v-model="item.transportMode"
             :initValue="item.transportMode"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="运输方式"
             placeholder="请输入运输方式"
             :border="false"
@@ -207,7 +213,7 @@
             <cat-field
             v-model="item.outorderPerson"
             :initValue="item.outorderPerson"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="出库人"
             placeholder="请输入出库人"
             :border="false"
@@ -216,7 +222,7 @@
             <cat-field
             v-model="item.outorderRemark"
             :initValue="item.outorderRemark"
-            :readonly='!isEditDelivery'
+            :readonly='!item.isEdit && item.isEdit !== undefined '
             label="备注"
             placeholder="请输入备注"
             :border="false"
@@ -232,7 +238,7 @@
         block plain 
         @click='submit' 
         v-if="orderXqType === 'add'">
-        提交
+        保存
       </van-button>
       <van-button
         class='submit-btn' 
@@ -323,7 +329,8 @@
       this.orderXqType = option.type
       if(this.orderXqType === 'edit'){
         this.orderXq = JSON.parse(option.order)
-        this.orderXq.productList = JSON.parse(option.order).productList
+        // 解决不知道什么原因导致的列表数据不渲染
+        this.$forceUpdate()
         this.isEditProduct = false
       }
 			this.$eventBus.$on('saveOrderInfo',(data)=>{
@@ -349,33 +356,47 @@
 					  forbidClick: true,
 					})
 					// 给数据库添加数据
-					collection.where({orderId: this.orderXq.orderId}).get().then((res)=>{
-						// 避免多次提交数据，以orderId来判断是否重复请求
-            this.orderXq.allTotalPrice = allTotalPrice
-						if(res.result.data.length === 0){
-              if(this.orderXqType === 'add'){
+          this.orderXq.allTotalPrice = allTotalPrice
+          if(this.orderXqType === 'add'){
+            collection.where({orderId: this.orderXq.orderId}).get().then((res)=>{
+              // 避免多次提交数据，以orderId来判断是否重复请求
+              if(res.result.data.length === 0){
                 this.orderXq.createTime = dateFormat('YYYY-mm-dd',new Date())
                 this.orderXq.status = '未出库'
                 collection.add(this.orderXq).then(()=>{
-                		loadingToast.clear()
-                		Toast.success('保存成功');
-                		setTimeout(()=>{
-                			uni.navigateTo({
-                				url: '../order-list/order-list'
-                			})
-                		},1000)
+                    loadingToast.clear()
+                    Toast.success('保存成功');
+                    setTimeout(()=>{
+                      uni.navigateTo({
+                        url: '../order-list/order-list'
+                      })
+                    },1000)
                   }).catch(()=>{
                     loadingToast.clear()
                     Toast.fail('保存失败');
                   })
-              } else if(this.orderXqType === 'edit'){
-                collection.where({_id: this.orderXq._id}).update({
-                                    userName:'苏语',
-                                    age:25,
-                                })
               }
-						}
-					})
+            })
+          } else if(this.orderXqType === 'edit'){
+              if(this.orderXq.deliveryList.length>0){
+                this.orderXq.deliveryList.forEach((it)=>{
+                  it.isEdit = false
+                })
+              }
+              this.orderXq.updateTime = dateFormat('YYYY-mm-dd',new Date())
+              let orderXq = JSON.parse(JSON.stringify(this.orderXq))
+              delete orderXq._id
+              collection.where({"_id": this.orderXq._id}).update(orderXq).then(()=>{
+                loadingToast.clear()
+                Toast.success('保存成功');
+                setTimeout(()=>{
+                  uni.navigateBack()
+                },500)
+              }).catch(()=>{
+                loadingToast.clear()
+                Toast.fail('保存失败');
+              })
+           }
 				}
 			},
 			productListAndBasicInfoValidate(){
@@ -420,6 +441,13 @@
 					adjustAmount:0
 				})
 			},
+      changeDeliveryEditStatus(){
+        this.orderXq.deliveryList.forEach(it=>{
+          if(it.isEdit !== undefined){
+            it.isEdit = !it.isEdit
+          }
+        })
+      },
       addDelivery(){
         if(!this.orderXq.deliveryList){
           this.$set(this.orderXq,'deliveryList',[])
@@ -433,7 +461,6 @@
         	outorderPerson:'',
         	outorderRemark:''
         })
-        console.log(this.orderXq.deliveryList)
       },
       delDelivery(index){
       	this.orderXq.deliveryList.splice(index,1)
@@ -547,6 +574,9 @@
 					display: flex;
 					justify-content: space-between;
           align-items: center;
+          .edit-save-icon{
+            display: flex;
+          }
 					.cross-icon{
 						&:hover{
 							color: #f56c6c;

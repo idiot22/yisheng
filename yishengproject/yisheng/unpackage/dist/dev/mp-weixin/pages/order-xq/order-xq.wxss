@@ -133,6 +133,11 @@
   -webkit-align-items: center;
           align-items: center;
 }
+.order-xq-container .inorder-detail-wraper .inorder-content .product-info-content .product-header .edit-save-icon.data-v-1e216986 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+}
 .order-xq-container .inorder-detail-wraper .inorder-content .product-info-content .product-header .cross-icon.data-v-1e216986:hover {
   color: #f56c6c;
 }

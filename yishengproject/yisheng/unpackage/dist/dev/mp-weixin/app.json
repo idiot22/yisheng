@@ -54,5 +54,6 @@
     "van-toast": "/wxcomponents/vant-weapp/toast/index",
     "van-dialog": "/wxcomponents/vant-weapp/dialog/index",
     "cat-field": "/wxcomponents/cust-components/cat-field"
-  }
+  },
+  "sitemapLocation": "sitemap.json"
 }

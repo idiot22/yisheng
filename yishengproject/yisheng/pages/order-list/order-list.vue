@@ -128,7 +128,7 @@
 				orderList:[]
 			}
 		},
-		async onLoad(){
+		async onShow(){
 			this.getOrderList()
 		},
 		methods: {
