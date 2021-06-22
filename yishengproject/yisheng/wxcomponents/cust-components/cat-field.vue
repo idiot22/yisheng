@@ -10,6 +10,8 @@
 			@input='input'
 			:error-message='errorMsg'
 			:readonly='readonly'
+      :type='type'
+      :autosize='autosize'
 			use-button-slot>
 			<div slot='button'>
 				<slot name='back-info'></slot>
@@ -20,7 +22,7 @@
 </template>
 <script>
 export default{
-	props:['placeholder','label','value','rules','readonly','initValue'],
+	props:['placeholder','label','value','rules','readonly','initValue','type','autosize'],
 	data(){
 		return{
 			required:false,

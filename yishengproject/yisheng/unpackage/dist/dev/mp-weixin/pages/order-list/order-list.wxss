@@ -26,6 +26,7 @@
 /* 文章场景相关 */
 .list-wraper {
   margin-top: 30px;
+  margin-bottom: 80px;
 }
 .list-item-wraper {
   font-size: 12px;
@@ -36,6 +37,14 @@
 }
 .list-item-wraper .info {
   color: #969799;
+}
+.list-item-wraper .address-info {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 70%;
+  display: inline-block;
+  overflow: hidden;
+  padding-left: 10px;
 }
 .list-item-wraper .order-list-total-money {
   text-align: right;

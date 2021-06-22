@@ -42,7 +42,9 @@
 				<div class='product-info-content' v-for="(item,index) in orderXq.productList" :key='index'>
 					<div class='product-header'>
 						{{'产品'+(index+1)}}
-            <div class='edit-save-icon' @click='isEditProduct=!isEditProduct' v-if="index===0 && orderXqType === 'edit'">
+            <div class='edit-save-icon' 
+                @click="isEditProduct=!isEditProduct" 
+                v-if="index===0 && orderXqType === 'edit' && orderXq.status === '未出库'">
               <i class='iconfont icon-baocun' v-if='isEditProduct'></i>
               <i class='iconfont icon-bianji' v-else></i>
             </div>
@@ -64,7 +66,6 @@
 						label="产品颜色"
 						placeholder="请输入此产品颜色"
 						:border="false"
-						:rules="productFormrules.color"
 					  />
 					  <cat-field
 						v-model="item.modelType"
@@ -142,6 +143,14 @@
 						  元
 						</div>
 					  </cat-field>
+            <cat-field
+            :v-model="item.remark"
+            :initValue='item.remark'
+            :readonly='!isEditProduct'
+            label="备注"
+            placeholder="请输入此备注"
+            :border="false">
+            </cat-field>
 					</van-cell-group>
 				</div>
 				<van-button  icon="plus" block 
@@ -155,8 +164,8 @@
         <div class='product-info-content' v-for="(item,index) in orderXq.deliveryList" :key='index'>
           <div class='product-header'>
             {{'运单'+(index+1)}}
-            <div class='edit-save-icon' @click='changeDeliveryEditStatus'>
-              <div v-if='item.isEdit !== undefined && index===0'>
+            <div class='edit-save-icon' v-if="orderXq.status !== '已结单'">
+              <div v-if='item.isEdit !== undefined && index===0' @click='changeDeliveryEditStatus'>
                 <i class='iconfont icon-baocun' v-if='item.isEdit'></i>
                 <i class='iconfont icon-bianji' v-else></i>
               </div>
@@ -172,16 +181,18 @@
             label="运单号"
             placeholder="请输入运单号"
             :border="false"
-            :rules="productFormrules.unit"
+            :rules="deliveryFormrules.expressNumber"
             />
             <cat-field
             v-model="item.deliveryAddress"
             :initValue="item.deliveryAddress"
             :readonly='!item.isEdit && item.isEdit !== undefined '
             label="送货地址"
+            type="textarea"
+            autosize
             placeholder="请输入送货地址"
             :border="false"
-            :rules="productFormrules.unit"
+            :rules="deliveryFormrules.deliveryAddress"
             />
             <cat-field
             v-model="item.expressAmount"
@@ -190,8 +201,12 @@
             label="运费金额"
             placeholder="请输入运费金额"
             :border="false"
-            :rules="productFormrules.unit"
-            />
+            use-button-slot
+            :rules="deliveryFormrules.expressAmount">
+            <div slot="back-info" size="small" type="primary">
+              元
+            </div>
+            </cat-field>
             <cat-field
             v-model="item.expressPayer"
             :initValue="item.expressPayer"
@@ -199,7 +214,7 @@
             label="运费付款人"
             placeholder="请输入运费付款人"
             :border="false"
-            :rules="productFormrules.unit"
+            :rules="deliveryFormrules.expressPayer"
             />
             <cat-field
             v-model="item.transportMode"
@@ -208,7 +223,7 @@
             label="运输方式"
             placeholder="请输入运输方式"
             :border="false"
-            :rules="productFormrules.unit"
+            :rules="deliveryFormrules.transportMode"
             />
             <cat-field
             v-model="item.outorderPerson"
@@ -217,16 +232,23 @@
             label="出库人"
             placeholder="请输入出库人"
             :border="false"
-            :rules="productFormrules.unit"
+            :rules="deliveryFormrules.outorderPerson"
+            />
+            <cat-field
+            :value="item.outorderTime"
+            readonly
+            label="出库时间"
+            :border="false"
             />
             <cat-field
             v-model="item.outorderRemark"
             :initValue="item.outorderRemark"
             :readonly='!item.isEdit && item.isEdit !== undefined '
             label="备注"
+            autosize
+            type="textarea"
             placeholder="请输入备注"
             :border="false"
-            :rules="productFormrules.unit"
             />
           </van-cell-group>
         </div>
@@ -247,7 +269,7 @@
         type="default"
         color='black'
         @click='addDelivery' 
-        v-if="orderXqType === 'edit'">
+        v-if="orderXqType === 'edit' && orderXq.status !== '已结单' ">
         添加出库信息
       </van-button>
       <van-button 
@@ -255,8 +277,16 @@
         block plain
         type="default"
         @click='submit' 
-        v-if="orderXqType === 'edit'">
+        v-if="orderXqType === 'edit' && orderXq.status !== '已结单'">
         保存
+      </van-button>
+      <van-button
+        class='submit-btn' 
+        block plain
+        type="default"
+        @click='endOrder' 
+        v-if="orderXq.status === '出库中'">
+        结单
       </van-button>
     </div>
     <div class='pop-wraper'>
@@ -272,10 +302,12 @@
 			</van-popup>
 		</div>
 		<van-toast id="van-toast" />
+    <van-dialog id="van-dialog" />
 	</div>
 </template>
 
 <script>
+  import Dialog from '../../wxcomponents/vant-weapp/dialog/dialog'
 	import { dateFormat } from '../../utils/index.js'
 	import Toast from '../../wxcomponents/vant-weapp/toast/toast.js'
 	const db = uniCloud.database();
@@ -318,9 +350,19 @@
 						{ type: 'number', message: '请输入正确的调整金额', trigger: 'blur' }],
 					payMethod: { required: true, message: '请输入支付方式', trigger: 'blur' }
 				},
+        deliveryFormrules:{
+          expressNumber: { required: true, message: '请输入运单号', trigger: 'blur' },
+          deliveryAddress: { required: true, message: '请输入送货地址', trigger: 'blur' },
+          expressAmount:[{ required: true, message: '请输入运费金额', trigger: 'blur' },
+          	  { type: 'number', message: '请输入正确的运费金额', trigger: 'blur' }],
+          transportMode:{ required: true, message: '请输入运输方式', trigger: 'blur' },
+          expressPayer: { required: true, message: '请输入运费付款人', trigger: 'blur' },
+          outorderPerson: { required: true, message: '请输入出库人', trigger: 'blur' }
+        },
 				selectProduct:{},
 				selectProductIndex:-1,
 				paymentPop:false,
+        
         isEditProduct: true,
         isEditDelivery: true
 			}
@@ -341,9 +383,43 @@
 			})
 		},
 		methods: {
+      endOrder(){
+        let valide = this.deliveryValidate()
+        Dialog.confirm({
+        message: '结单后不允许修改单子内容，确定将此单子结单吗？',
+        }).then(()=>{
+           if(valide){
+            let loadingToast = Toast.loading({
+              message: '保存中...',
+              forbidClick: true,
+            })
+            //将编辑状态改成false
+            if(this.orderXq.deliveryList.length>0){
+              this.orderXq.deliveryList.forEach((it)=>{
+                it.isEdit = false
+              })
+            }
+            this.orderXq.updateTime = dateFormat('YYYY-mm-dd',new Date())
+            let orderXq = JSON.parse(JSON.stringify(this.orderXq))
+            orderXq.status = '已结单'
+            delete orderXq._id
+            collection.where({"_id": this.orderXq._id}).update(orderXq).then(()=>{
+              loadingToast.clear()
+              Toast.success('保存成功');
+              setTimeout(()=>{
+                uni.navigateBack()
+              },500)
+            }).catch(()=>{
+              loadingToast.clear()
+              Toast.fail('保存失败');
+            })
+          }
+        })
+
+      },
 			submit(){
 				// 校验
-				let valide = this.productListAndBasicInfoValidate()
+				let valide = this.productListAndBasicInfoValidate() && this.deliveryValidate()
 				// 调保存接口
 				if(valide){
 					// 计算订单总额
@@ -378,6 +454,7 @@
               }
             })
           } else if(this.orderXqType === 'edit'){
+              //将编辑状态改成false
               if(this.orderXq.deliveryList.length>0){
                 this.orderXq.deliveryList.forEach((it)=>{
                   it.isEdit = false
@@ -386,6 +463,9 @@
               this.orderXq.updateTime = dateFormat('YYYY-mm-dd',new Date())
               let orderXq = JSON.parse(JSON.stringify(this.orderXq))
               delete orderXq._id
+              if(orderXq.deliveryList.length>0){
+                orderXq.status = '出库中'
+              }
               collection.where({"_id": this.orderXq._id}).update(orderXq).then(()=>{
                 loadingToast.clear()
                 Toast.success('保存成功');
@@ -418,6 +498,17 @@
 				}
 				return true
 			},
+      deliveryValidate(){
+        for(let i=0;i<this.orderXq.deliveryList.length;i++){
+        	for(let key in this.orderXq.deliveryList[i]){
+        		if(this.deliveryFormrules[key] && !this.orderXq.deliveryList[i][key] && this.orderXq.deliveryList[i][key]!==0){
+        			Toast(`${this.deliveryFormrules[key].message || this.deliveryFormrules[key][0].message}`)
+        			return false
+        		}
+        	}
+        }
+        return true
+      },
 			showPaymentPop(item, index){
         if(!this.isEditProduct){
           return
@@ -459,23 +550,33 @@
         	expressPayer:'',
         	transportMode:'',
         	outorderPerson:'',
-        	outorderRemark:''
+        	outorderRemark:'',
+          outorderTime: dateFormat('YYYY-mm-dd',new Date())
         })
       },
       delDelivery(index){
-      	this.orderXq.deliveryList.splice(index,1)
+        Dialog.confirm({
+        message: '确定删除此运单吗？',
+        }).then(()=>{
+          this.orderXq.deliveryList.splice(index,1)
+        })
       },
 			delProduct(index){
-				this.orderXq.productList.splice(index,1)
+        Dialog.confirm({
+        message: '确定删除此产品吗？',
+        }).then(()=>{
+			  	this.orderXq.productList.splice(index,1)
+        })
 			},
 			addOrderInfo(){
+        console.log(32423)
 				uni.navigateTo({
-					url: `../dingdan-info/dingdan-info?id=${this.id}&type=add`
+					url: `/pages/dingdan-info/dingdan-info?id=${this.id}&type=add`
 				})
 			},
 			editOrderInfo(){
 				uni.navigateTo({
-					url: `../dingdan-info/dingdan-info?orderInfo=${JSON.stringify(this.orderXq)}&id=${this.id}&type=edit`
+					url: `/pages/dingdan-info/dingdan-info?orderInfo=${JSON.stringify(this.orderXq)}&id=${this.id}&type=edit`
 				})
 			},
 			// 获取产品总价
@@ -496,8 +597,9 @@
 .order-xq-container{
 	height: 100%;
 	width: 100%;
-	padding: 0px 20px 20px 20px;
+	padding: 0px 20px 50px 20px;
 	box-sizing:border-box;
+  overflow-y: auto;
 	.submit-btn{
 		/deep/button{
 			margin: 20px 0px
@@ -514,7 +616,7 @@
 				display: flex;
 				justify-content: center;
 				align-items: center;
-				height: 50px;
+				height: 70px;
 				.order-logo{
 					height: 30px;
 					width: 30px;
@@ -543,7 +645,7 @@
 				}
 			}
 			.right{
-				height: 50px;
+				height: 70px;
 				display: flex;
 				justify-content: center;
 				align-items: center;

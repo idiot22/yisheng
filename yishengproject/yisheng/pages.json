@@ -71,9 +71,11 @@
             "van-tag": "/wxcomponents/vant-weapp/tag/index",
             "van-datetime-picker": "/wxcomponents/vant-weapp/datetime-picker/index",
             "van-popup": "/wxcomponents/vant-weapp/popup/index",
-			"van-picker": "/wxcomponents/vant-weapp/picker/index",
-			"van-toast": "/wxcomponents/vant-weapp/toast/index",
-			"van-dialog": "/wxcomponents/vant-weapp/dialog/index"
+            "van-picker": "/wxcomponents/vant-weapp/picker/index",
+            "van-toast": "/wxcomponents/vant-weapp/toast/index",
+            "van-dialog": "/wxcomponents/vant-weapp/dialog/index",
+            "van-row": "/wxcomponents/vant-weapp/row/index",
+            "van-col": "/wxcomponents/vant-weapp/col/index"
         }
     },
     "tabBar": {

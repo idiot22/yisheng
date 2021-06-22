@@ -132,9 +132,11 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
 //
 //
 //
+//
+//
 var _default =
 {
-  props: ['placeholder', 'label', 'value', 'rules', 'readonly', 'initValue'],
+  props: ['placeholder', 'label', 'value', 'rules', 'readonly', 'initValue', 'type', 'autosize'],
   data: function data() {
     return {
       required: false,

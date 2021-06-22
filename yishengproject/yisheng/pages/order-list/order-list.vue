@@ -1,36 +1,45 @@
 <template>
 	<div>
 		<van-dropdown-menu active-color="#54bcc6">
-		  <van-dropdown-item :value="filters.orderStatus" :options="orderStatusList" />
+		  <van-dropdown-item :value="filters.status" :options="orderStatusList" @change="searchOrderList($event,'status')"/>
 		  <van-dropdown-item id="item" title="筛选">
 		    <van-cell-group>
 		      <cat-field
-		    	v-model="item.productName"
+		    	v-model="filters.customerName"
 		    	label="客户姓名"
-				placeholder='请输入客户姓名'
+			  	placeholder='请输入客户姓名'
 		      />
 		      <cat-field
-		    	v-model="item.productName"
+		    	:value="filters.createTime"
 		    	label="录单时间"
-				placeholder='请点击'
-				readonly='true'
-				@click.native='showPop = true'
+          placeholder='请点击'
+          readonly='true'
+          @click.native="showPop = true,datepopType='createTime'"
 		      />
 		      <cat-field
-		    	v-model="item.productName"
-		    	label="订单编号"
-				placeholder='请输入订单编号'
-		      />
-		      <cat-field
-		    	v-model="item.productName"
-		    	label="产品名称"
-				placeholder='请输入产品名称'
+		    	:value="filters.updateTime"
+		    	label="更新时间"
+          placeholder='请点击'
+          readonly='true'
+          @click.native="showPop = true,datepopType='updateTime'"
 		      />
 		    </van-cell-group>
 		    <view style="padding: 5px 16px;">
-		      <van-button color='#54bcc6' block round bind:click="onConfirm">
-		        确认
-		      </van-button>
+          <van-row>
+            <van-col span="10">
+              <van-button color='#54bcc6' block round @click="searchOrderList">
+                确认
+              </van-button>
+            </van-col>
+            <van-col span='4'>
+              <span style="color:white">.</span>
+            </van-col>
+            <van-col span="10">
+              <van-button color='#54bcc6' block round @click="resetSearch" plain>
+                重置
+              </van-button>
+            </van-col>
+          </van-row>
 		    </view>
 		  </van-dropdown-item>
 		</van-dropdown-menu>
@@ -41,15 +50,14 @@
 				v-for='(order,orderIndex) in orderList' 
 				:key='orderIndex'
 				async-close
-				@click='toOrderXq(order)'
 				@close="deleteOrder($event,order)">
-				<div class='list-item-wraper'>
+				<div class='list-item-wraper' @click='toOrderXq(order)'>
 				  <van-row>
 					  <van-col :span='9'>客户姓名：<span class='info'>{{order.customerName}}</span></van-col>
-					  <van-col :span='9'>联系电话：<span class='info'>{{order.phone}}</span></van-col>
+					  <van-col :span='9'>联系电话：<span class='info'>{{order.phone || '暂无'}}</span></van-col>
 					  <van-col :span='6' class='tag-wraper'>
 						  <van-tag color="#ffe1e1" text-color="#f17474" v-if="order.status === '未出库'">未出库</van-tag>
-						  <van-tag color="#f3f3f3" text-color="#a7a7a7" v-if="order.status === '已结单'">已出库</van-tag>
+						  <van-tag color="#f3f3f3" text-color="#a7a7a7" v-if="order.status === '已结单'">已结单</van-tag>
 						  <van-tag color="#dafffc" text-color="#70b1b7" v-if="order.status === '出库中'">出库中</van-tag>
 					  </van-col>
 				  </van-row>
@@ -59,6 +67,9 @@
 				  <van-row>
 					  <van-col>录单时间：<span class='info'>{{order.createTime}}</span></van-col>
 				  </van-row>
+          <van-row v-if='order.updateTime'>
+            <van-col>更新时间：<span class='info'>{{order.updateTime}}</span></van-col>
+          </van-row>
 				  <van-row>
 					  <van-col :span='18'>录入产品：
 					  <span class='info'>
@@ -67,6 +78,13 @@
 					  </van-col>
 					  <van-col :span='6'></van-col>
 				  </van-row>
+          <van-row v-if='order.deliveryList[0].deliveryAddress'>
+            <van-col :span='24'>
+              <div style='display: flex; align-items: center;'>
+                送货地址:<span class='info address-info'>{{order.deliveryList[0].deliveryAddress}}</span>
+              </div>
+             </van-col>
+          </van-row>
 				  <van-row>
 					  <div class='order-list-total-money'>
 						  订单总额：<span>¥{{order.allTotalPrice}}</span>
@@ -93,7 +111,6 @@
 		  	@cancel='showPop=false'
 		    type="date"
 		    :value="dateObj.currentDate"
-		    @input="inputDate"
 		    :min-date="dateObj.minDate"
 		    :formatter="formatter"
 		  />
@@ -104,6 +121,7 @@
 </template>
 
 <script>
+  import { dateFormat } from '../../utils/index.js'
 	import Dialog from '../../wxcomponents/vant-weapp/dialog/dialog';
 	import Toast from '../../wxcomponents/vant-weapp/toast/toast.js'
 	const db = uniCloud.database()
@@ -117,29 +135,56 @@
 					minDate: '2020-01-01'
 				},
 				orderStatusList: [
-				    { text: '全部单子', value: 0 },
-				    { text: '未出库', value: 1 },
-				    { text: '已出库', value: 2 },
+				    { text: '全部单子', value: ''},
+				    { text: '未出库', value: '未出库' },
+				    { text: '出库中', value: '出库中' },
+            { text: '已结单', value: '已结单' }
 				  ],
 				filters:{
-					orderStatus:0,
-					recordDate:''
+					status:'',
+          customerName:'',
+          createTime:'',
+          updateTime:''
 				},
-				orderList:[]
+				orderList:[],
+        datepopType: ''
 			}
 		},
 		async onShow(){
 			this.getOrderList()
 		},
 		methods: {
-			onConfirm() {
-			  this.selectComponent('#item').toggle();
-			},
-      onSwitch1Change(detail) {
-        this.setData({ switch1: detail });
+      resetSearch(){
+        this.filters.createTime = ''
+        this.filters.customerName = ''
+        this.filters.updateTime = ''
+        this.searchOrderList()
       },
-      onSwitch2Change(detail) {
-        this.setData({ switch2: detail });
+      searchOrderList(e, type){
+        if(type === 'status'){
+          this.filters.status = e.mp.detail
+        }
+        if(!type){
+          this.selectComponent('#item').toggle();
+        }
+        let loadingToast = Toast.loading({
+          message: '加载中...',
+          forbidClick: true,
+        })
+        let filters = this.deleteEmptyKey(this.filters)
+        collection.where(filters).get().then((res)=>{
+          this.orderList = res.result.data
+          loadingToast.clear()
+        })
+      },
+      deleteEmptyKey(filters){
+        let obj = JSON.parse(JSON.stringify(filters))
+        for(let key in obj){
+          if(!obj[key] && obj[key] !== 0 ){
+            delete obj[key]
+          }
+        }
+        return obj
       },
       toOrderXq(order){
         uni.navigateTo({
@@ -182,11 +227,9 @@
         }
         return value;
       },
-			inputDate(event){
-				this.dateObj.currentDate = event.mp.detail
-			},
 			dateConfirm(event){
 				this.showPop = false
+        this.filters[this.datepopType] = dateFormat('YYYY-mm-dd',new Date(event.mp.detail))
 			}
 		}
 	}
@@ -195,6 +238,7 @@
 <style lang='scss'>
 .list-wraper{
 	margin-top: 30px;
+  margin-bottom: 80px;
 }
 .list-item-wraper{
 	font-size: 12px;
@@ -205,6 +249,14 @@
 	.info{
 	 color: #969799;
 	}
+  .address-info{
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 70%;
+    display: inline-block;
+    overflow: hidden;
+    padding-left: 10px;
+  }
 	.order-list-total-money{
 		text-align: right;
 		font-size: 13px;
